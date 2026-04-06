@@ -1,6 +1,8 @@
 #include "app.hpp"
 #include "compute_program.hpp"
 #include "engine.hpp"
+#include "glm/ext/vector_float2.hpp"
+#include "glm/geometric.hpp"
 #include "index_buffer.hpp"
 #include "shader_program.hpp"
 #include "storage_buffer.hpp"
@@ -10,6 +12,7 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_timer.h>
 #include <cmath>
+#include <ctime>
 #include <glad/glad.h>
 #include <vector>
 
@@ -28,8 +31,38 @@ void App::run()
     IndexBuffer ibo(m_indices, IndexBuffer::DRAW_TYPE::STATIC_DRAW);
     VertexAttributeObject vao(vbo, ibo);
 
-    std::vector<float> uniform_data = {m_engine.get_time_seconds(), 0};
+    const float wall_radius = 300.0;
+    std::vector<float> uniform_data = {m_engine.get_time_seconds(), 0.0, wall_radius, static_cast<float>(m_init_window_width),
+                                       static_cast<float>(m_init_window_height)};
     UniformBuffer uniform(uniform_data, UniformBuffer::DRAW_TYPE::DYNAMIC_DRAW);
+
+    srand(time(0));
+
+    const int circle_count = 20;
+    const float circle_radius = 15.0;
+
+    for (int i = 0; i < circle_count; i++)
+    {
+        int x;
+        int y;
+        float len;
+        do
+        {
+            x = (rand() % (static_cast<int>(wall_radius) * 2) - static_cast<int>(wall_radius)) + m_init_window_width / 2;
+            y = (rand() % (static_cast<int>(wall_radius) * 2) - static_cast<int>(wall_radius)) + m_init_window_height / 2;
+            len = glm::distance(glm::vec2(x, y), glm::vec2(m_init_window_width / 2, m_init_window_height / 2));
+        } while (len > wall_radius - static_cast<int>(circle_radius) * 2);
+
+        int vx = rand() % 15 + 1;
+        int vy = rand() % 15 + 1;
+
+        m_circles.push_back(Circle{
+            glm::vec2(x, y),
+            circle_radius,
+            glm::vec4(1.0, 0.0, 0.0, 1.0),
+            glm::vec2(vx, vy),
+        });
+    }
 
     StorageBuffer ssbo(m_circles, StorageBuffer<Circle>::DRAW_TYPE::DYNAMIC_DRAW);
 

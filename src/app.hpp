@@ -49,20 +49,7 @@ private:
         1, 2, 3  //
     };
 
-    std::vector<Circle> m_circles = {
-        Circle{
-            glm::vec2(700.0, 700.0),
-            100.0,
-            glm::vec4(1.0, 0.0, 0.0, 1.0),
-            glm::vec2(0.0, 0.0),
-        },
-        Circle{
-            glm::vec2(300.0, 400.0),
-            50.0,
-            glm::vec4(0.0, 1.0, 0.0, 1.0),
-            glm::vec2(0.0, 0.0),
-        },
-    };
+    std::vector<Circle> m_circles;
 
 private:
     void render(ShaderProgram shader_program, ComputeProgram compute_program, VertexAttributeObject vao, UniformBuffer uniform,

@@ -15,35 +15,77 @@ layout(std430, binding = 0) buffer SSBOBuffer {
 layout(std140, binding = 0) uniform UniformBuffer {
     float time;
     float circle_count;
+    float border_radius;
+    float screen_width;
+    float screen_height;
 };
 
 layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 void main() {
-    if (gl_GlobalInvocationID.x > circle_count) {
+    uint id = gl_GlobalInvocationID.x;
+
+    if (id >= circle_count) {
         return;
     }
 
-    if (circles[gl_GlobalInvocationID.x].pos.y < circles[gl_GlobalInvocationID.x].radius){
-        circles[gl_GlobalInvocationID.x].pos.y = circles[gl_GlobalInvocationID.x].radius;
-        circles[gl_GlobalInvocationID.x].velocity.y *= -0.9;
+    if (length(circles[id].velocity) > 0) {
+        vec2 friction = normalize(circles[id].velocity) * 0.05;
+        circles[id].velocity -= friction;
+
+        if (length(circles[id].velocity) < 0.1) {
+            circles[id].velocity = vec2(0.0, 0.0);
+        }
     }
 
-    vec2 gravity = vec2(0.0, -0.2);
-    circles[gl_GlobalInvocationID.x].velocity += gravity;
+    if (circles[id].velocity.y > -10){
+        vec2 gravity = vec2(0.0, -0.2);
+        circles[id].velocity += gravity;
+    }
 
-    circles[gl_GlobalInvocationID.x].pos += circles[gl_GlobalInvocationID.x].velocity;
+    for(int i = 0; i < int(circle_count); i++){ 
+        if(i == id){
+            continue;
+        }
 
-    // for(int i = 0; i < int(circle_count); i++){ 
-    //     if(i == gl_GlobalInvocationID.x){
-    //         continue;
-    //     }
+        float dist = distance(circles[id].pos, circles[i].pos.xy);
+        float r1 = circles[id].radius;
+        float r2 = circles[i].radius;
 
-    //     float dist = distance(circles[gl_GlobalInvocationID.x].pos, circles[i].pos.xy);
-    //     float r1 = circles[gl_GlobalInvocationID.x].radius;
-    //     float r2 = circles[i].radius;
+        if (dist < r1 + r2){
+            vec2 n = normalize(circles[id].pos - circles[i].pos);
+            vec2 d = circles[id].velocity;
+            circles[id].velocity = (d - 2 * dot(d, n) * n);
 
-    //     if (dist < r1 + r2){
-    //         circles[gl_GlobalInvocationID.x].velocity.xy *= -0.9;
-    //     }
-    // }
+
+
+            // vec2 n2 = normalize(circles[i].pos - circles[id].pos);
+            // vec2 d2 = circles[i].velocity;
+            // circles[i].velocity = (d2 - 2 * dot(d2, n2) * n2);
+
+            // for(int i = 0; i < 5; i++){
+            //     if (dist < r1 + r2){
+            //     circles[id].pos += n * ((r1 + r2) - dist) / 2.0;
+            //     circles[i.x].pos += n2 * ((r1 + r2) - dist) / 2.0;
+            //     }
+            // }
+
+            circles[id].pos += n * ((r1 + r2) - dist) / 2.0;
+            //circles[i.x].pos += n2 * ((r1 + r2) - dist) / 2.0;
+
+            break;
+        }
+    }
+
+    float dist = distance(circles[id].pos, vec2(screen_width / 2.0, screen_height / 2.0));
+    float r1 = circles[id].radius;
+
+    if (dist > border_radius - r1 &&
+        dist < border_radius + 20 + r1){
+        vec2 n = normalize(circles[id].pos - vec2(screen_width / 2.0, screen_height / 2.0));
+        vec2 d = circles[id].velocity;
+        circles[id].velocity = d - 2 * dot(d, n) * n;
+        circles[id].pos -= n;
+    }
+
+    circles[id].pos += circles[id].velocity;
 }

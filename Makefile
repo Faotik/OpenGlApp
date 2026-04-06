@@ -8,7 +8,7 @@ LIBS_FOLDER := libs
 
 INCLUDE_FLAGS := -I$(LIBS_FOLDER) -I$(LIBS_FOLDER)/glad/include/
 
-CXXFLAGS := -std=c++23 -I$(SRC_DIR) $(INCLUDE_FLAGS) -Wall -Wextra -Wshadow -MMD -MP -O1 -g
+CXXFLAGS := -std=c++23 -I$(SRC_DIR) $(INCLUDE_FLAGS) -Wall -Wextra -Wshadow -MMD -MP -O0 -g
 CXXLIBS :=
 
 PKG_DEPS := sdl3
