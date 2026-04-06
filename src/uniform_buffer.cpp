@@ -15,5 +15,5 @@ void UniformBuffer::bind(GLuint binding)
 void UniformBuffer::update(std::vector<float> &data)
 {
     glBindBuffer(GL_UNIFORM_BUFFER, m_uniform_buffer);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, data.size(), data.data());
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, data.size() * sizeof(float), data.data());
 }

@@ -9,6 +9,7 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_timer.h>
 #include <glad/glad.h>
+#include <iostream>
 #include <vector>
 
 App::App()

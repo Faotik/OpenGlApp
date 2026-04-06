@@ -1,6 +1,9 @@
 #version 460 core
 
-uniform float time;
+layout(std140, binding = 0) uniform data {
+    float time;
+};
+
 layout(location = 0) in vec3 pos;
 
 out vec4 vertexColor;
