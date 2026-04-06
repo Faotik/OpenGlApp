@@ -9,4 +9,4 @@ void main()
 {
     gl_Position = vec4(pos.xyz, 1.0);
     vertexColor = vec4(0.0, cos(time*2)+1.2, cos(time*2)+1.2, 1);
-};
+}
