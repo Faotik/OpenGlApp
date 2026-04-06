@@ -84,6 +84,7 @@ void Engine::glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum s
         std::cout << "Source: Window System";
         break;
     case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        return;
         std::cout << "Source: Shader Compiler";
         break;
     case GL_DEBUG_SOURCE_THIRD_PARTY:
@@ -164,6 +165,11 @@ void Engine::swap_window()
 float Engine::get_time_seconds()
 {
     return ((float)SDL_GetTicks()) / 1000;
+}
+
+void Engine::memory_barrier(MEMORY_BARRIER_TYPE type)
+{
+    glMemoryBarrier(static_cast<GLbitfield>(type));
 }
 
 Engine::~Engine()

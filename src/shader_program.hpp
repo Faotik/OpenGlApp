@@ -1,12 +1,11 @@
 #pragma once
 
 #include "shader.hpp"
-#include <vector>
 
 class ShaderProgram
 {
 public:
-    ShaderProgram(std::string vertex_shader_path, std::string fragment_shaders_path);
+    ShaderProgram(std::string vertex_shader_path, std::string fragment_shader_path);
     void use();
 
 private:

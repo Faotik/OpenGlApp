@@ -13,9 +13,9 @@ public:
         STREAM_DRAW = GL_STREAM_DRAW,
     };
 
-    UniformBuffer(std::vector<float> &data, DRAW_TYPE draw_type);
+    UniformBuffer(const std::vector<float> &data, DRAW_TYPE draw_type);
     void bind(GLuint binding);
-    void update(std::vector<float> &data);
+    void update(const std::vector<float> &data);
 
 public:
     GLuint m_uniform_buffer;

@@ -7,11 +7,17 @@
 class Engine
 {
 public:
+    enum class MEMORY_BARRIER_TYPE
+    {
+        SHADER_STORAGE_BARRIER = GL_SHADER_STORAGE_BARRIER_BIT,
+    };
+
     void init(const std::string window_title, int init_window_width, int init_window_height);
     void clear_window(float red = 0.0f, float green = 0.0f, float blue = 0.0f, float alpha = 1.0);
     void swap_window();
     static std::string read_file(const std::string &filename);
     float get_time_seconds();
+    void memory_barrier(MEMORY_BARRIER_TYPE type);
     ~Engine();
 
 private:

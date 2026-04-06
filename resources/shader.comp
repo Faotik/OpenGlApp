@@ -1,0 +1,49 @@
+#version 460 core
+
+struct Circle
+{
+    vec2 pos;
+    float radius;
+    vec4 color;
+    vec2 velocity;
+};
+
+layout(std430, binding = 0) buffer SSBOBuffer {
+    Circle circles[];
+};
+
+layout(std140, binding = 0) uniform UniformBuffer {
+    float time;
+    float circle_count;
+};
+
+layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    if (gl_GlobalInvocationID.x > circle_count) {
+        return;
+    }
+
+    if (circles[gl_GlobalInvocationID.x].pos.y < circles[gl_GlobalInvocationID.x].radius){
+        circles[gl_GlobalInvocationID.x].pos.y = circles[gl_GlobalInvocationID.x].radius;
+        circles[gl_GlobalInvocationID.x].velocity.y *= -0.9;
+    }
+
+    vec2 gravity = vec2(0.0, -0.2);
+    circles[gl_GlobalInvocationID.x].velocity += gravity;
+
+    circles[gl_GlobalInvocationID.x].pos += circles[gl_GlobalInvocationID.x].velocity;
+
+    // for(int i = 0; i < int(circle_count); i++){ 
+    //     if(i == gl_GlobalInvocationID.x){
+    //         continue;
+    //     }
+
+    //     float dist = distance(circles[gl_GlobalInvocationID.x].pos, circles[i].pos.xy);
+    //     float r1 = circles[gl_GlobalInvocationID.x].radius;
+    //     float r2 = circles[i].radius;
+
+    //     if (dist < r1 + r2){
+    //         circles[gl_GlobalInvocationID.x].velocity.xy *= -0.9;
+    //     }
+    // }
+}
