@@ -1,13 +1,15 @@
 #include "shader_program.hpp"
 #include "shader.hpp"
 #include <glad/glad.h>
+#include <string>
 
-ShaderProgram::ShaderProgram(const std::vector<std::reference_wrapper<Shader>> &shaders) : m_shader_program(glCreateProgram())
+ShaderProgram::ShaderProgram(std::string vertex_shader_path, std::string fragment_shaders_path) : m_shader_program(glCreateProgram())
 {
-    for (const auto &shader : shaders)
-    {
-        glAttachShader(m_shader_program, shader.get().m_shader);
-    }
+    Shader vertex_shader(SHADER_TYPE::VERTEX_SHADER, vertex_shader_path);
+    Shader fragment_shader(SHADER_TYPE::FRAGMENT_SHADER, fragment_shaders_path);
+
+    glAttachShader(m_shader_program, vertex_shader.m_shader);
+    glAttachShader(m_shader_program, fragment_shader.m_shader);
 
     glLinkProgram(m_shader_program);
 }

@@ -6,7 +6,7 @@
 class ShaderProgram
 {
 public:
-    ShaderProgram(const std::vector<std::reference_wrapper<Shader>> &shaders);
+    ShaderProgram(std::string vertex_shader_path, std::string fragment_shaders_path);
     void use();
 
 private:

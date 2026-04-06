@@ -19,10 +19,7 @@ App::App()
 
 void App::run()
 {
-    Shader vertex_shader(SHADER_TYPE::VERTEX_SHADER, "resources/shader.vert");
-    Shader fragment_shader(SHADER_TYPE::FRAGMENT_SHADER, "resources/shader.frag");
-    std::vector<std::reference_wrapper<Shader>> shaders = {vertex_shader, fragment_shader};
-    ShaderProgram shader_program(shaders);
+    ShaderProgram shader_program("resources/shader.vert", "resources/shader.frag");
 
     VertexAttributeData attribute_data(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0, 0);
     VertexBuffer vbo(m_vertices, VertexBuffer::DRAW_TYPE::STATIC_DRAW, {attribute_data});
