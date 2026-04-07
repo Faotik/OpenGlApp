@@ -15,19 +15,16 @@
             commonBuildInputs = [
                 pkgs.libGL
 
-                pkgs.sdl3
-
                 pkgs.wayland
+                pkgs.wayland-scanner
                 pkgs.libxkbcommon
             ];
 
             commonNativeBuildInputs = [
-                pkgs.gcc
                 pkgs.clang-tools
                 pkgs.clang
                 pkgs.pkg-config
-                pkgs.bear
-                pkgs.gnumake
+                pkgs.cmake
             ];
         in {
             devShells.${system} = {

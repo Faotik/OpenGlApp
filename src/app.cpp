@@ -38,23 +38,24 @@ void App::run()
 
     srand(time(0));
 
-    const int circle_count = 20;
-    const float circle_radius = 15.0;
+    const int circle_count = 100;
 
     for (int i = 0; i < circle_count; i++)
     {
         int x;
         int y;
         float len;
+        float circle_radius;
         do
         {
             x = (rand() % (static_cast<int>(wall_radius) * 2) - static_cast<int>(wall_radius)) + m_init_window_width / 2;
             y = (rand() % (static_cast<int>(wall_radius) * 2) - static_cast<int>(wall_radius)) + m_init_window_height / 2;
             len = glm::distance(glm::vec2(x, y), glm::vec2(m_init_window_width / 2, m_init_window_height / 2));
+            circle_radius = 10;
         } while (len > wall_radius - static_cast<int>(circle_radius) * 2);
 
-        int vx = rand() % 15 + 1;
-        int vy = rand() % 15 + 1;
+        int vx = rand() % 20 + 1;
+        int vy = rand() % 20 + 1;
 
         m_circles.push_back(Circle{
             glm::vec2(x, y),

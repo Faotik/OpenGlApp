@@ -28,19 +28,7 @@ void main() {
         return;
     }
 
-    if (length(circles[id].velocity) > 0) {
-        vec2 friction = normalize(circles[id].velocity) * 0.05;
-        circles[id].velocity -= friction;
-
-        if (length(circles[id].velocity) < 0.1) {
-            circles[id].velocity = vec2(0.0, 0.0);
-        }
-    }
-
-    if (circles[id].velocity.y > -10){
-        vec2 gravity = vec2(0.0, -0.2);
-        circles[id].velocity += gravity;
-    }
+    vec2 gravity = vec2(0.0, -0.2);
 
     for(int i = 0; i < int(circle_count); i++){ 
         if(i == id){
@@ -52,13 +40,21 @@ void main() {
         float r2 = circles[i].radius;
 
         if (dist < r1 + r2){
-            vec2 n = normalize(circles[id].pos - circles[i].pos);
-            vec2 d = circles[id].velocity;
-            circles[id].velocity = (d - 2 * dot(d, n) * n);
+            vec2 x1 = circles[id].pos;
+            vec2 x2 = circles[i].pos;
+            vec2 v1 = circles[id].velocity;
+            vec2 v2 = circles[i].velocity;
+            float m1 = (circles[id].radius * circles[id].radius * 3.14) * 0.1;
+            float m2 = (circles[i].radius * circles[i].radius * 3.14) * 0.1;
+
+            vec2 n = normalize(x1 - x2);
+            vec2 n2 = normalize(x2 - x1);
+
+            circles[id].velocity = v1 - ((2 * m2) / (m1 + m2)) * (dot(n, (v1 - v2))) * n;
+            //circles[i].velocity = v2 - ((2 * m1) / (m1 + m2)) * (dot(n, (v2 - v1))) * n;
 
 
-
-            // vec2 n2 = normalize(circles[i].pos - circles[id].pos);
+            //vec2 n2 = normalize(x2 - x1);
             // vec2 d2 = circles[i].velocity;
             // circles[i].velocity = (d2 - 2 * dot(d2, n2) * n2);
 
@@ -69,22 +65,42 @@ void main() {
             //     }
             // }
 
-            circles[id].pos += n * ((r1 + r2) - dist) / 2.0;
-            //circles[i.x].pos += n2 * ((r1 + r2) - dist) / 2.0;
-
-            break;
+            circles[id].pos += n * ((r1 + r2) - dist) * ((m1 + m2) / m1) / 2.0;
+            //circles[i].pos += n2 * ((r1 + r2) - dist) * ((m1 + m2) / m2) / 2.0;
+            //gravity = vec2(0.0, 0.0);
         }
     }
 
     float dist = distance(circles[id].pos, vec2(screen_width / 2.0, screen_height / 2.0));
     float r1 = circles[id].radius;
 
-    if (dist > border_radius - r1 &&
-        dist < border_radius + 20 + r1){
+    if (dist > border_radius - r1){
         vec2 n = normalize(circles[id].pos - vec2(screen_width / 2.0, screen_height / 2.0));
         vec2 d = circles[id].velocity;
-        circles[id].velocity = d - 2 * dot(d, n) * n;
-        circles[id].pos -= n;
+        circles[id].velocity = (d - 2 * dot(d, n) * n);
+        circles[id].pos -= n * (dist - border_radius + r1);
+    }
+    circles[id].velocity += gravity;
+    circles[id].velocity += gravity;
+
+    circles[id].velocity *= 0.9;
+    // if (length(circles[id].velocity) > 0) {
+    //     vec2 friction = normalize(circles[id].velocity) * 0.05;
+    //     circles[id].velocity -= friction;
+
+    //     if (abs(circles[id].velocity.x) < 0.03) {
+    //         circles[id].velocity.x = 0;
+    //     }
+    //     if (abs(circles[id].velocity.y) < 0.03) {
+    //         circles[id].velocity.y = 0;
+    //     }
+    // }
+
+    if (abs(circles[id].velocity.x) < 0.1) {
+        circles[id].velocity.x = 0;
+    }
+    if (abs(circles[id].velocity.y) < 0.1) {
+        circles[id].velocity.y = 0;
     }
 
     circles[id].pos += circles[id].velocity;
