@@ -47,7 +47,7 @@ target_include_directories(openglapp
         src/
 )
 
-target_link_libraries(openglapp 
+target_link_libraries(openglapp
     PRIVATE 
         glad
         glm::glm

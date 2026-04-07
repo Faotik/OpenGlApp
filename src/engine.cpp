@@ -148,7 +148,6 @@ void Engine::glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum s
     }
 
     std::cout << std::endl;
-    exit(-1);
 }
 
 void Engine::clear_window(float red, float green, float blue, float alpha)
