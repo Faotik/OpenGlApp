@@ -25,6 +25,7 @@
                 pkgs.clang
                 pkgs.pkg-config
                 pkgs.cmake
+                pkgs.ninja
             ];
         in {
             devShells.${system} = {
