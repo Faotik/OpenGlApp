@@ -57,6 +57,7 @@ target_link_libraries(openglapp
         SDL3::SDL3
 )
 
-set_target_properties(openglapp PROPERTIES
+set_target_properties(openglapp
+	PROPERTIES
 		DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
