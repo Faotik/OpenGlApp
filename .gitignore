@@ -1,6 +1,7 @@
 .cache/
 .vscode/
 .vs/
+.idea/
 build/
 compile_commands.json
 main
