@@ -3,7 +3,7 @@
 
   "configurePresets": [
     {
-      "name": "Release",
+      "name": "release",
       "binaryDir": "build/release",
       "generator": "Ninja",
       "cacheVariables": {
@@ -15,7 +15,7 @@
       }
     },
     {
-      "name": "Debug",
+      "name": "debug",
       "binaryDir": "build/debug",
       "generator": "Ninja",
       "cacheVariables": {
@@ -27,41 +27,41 @@
   ],
   "buildPresets": [
     {
-      "name": "Release",
-      "configurePreset": "Release",
+      "name": "release",
+      "configurePreset": "release",
       "configuration": "Release"
     },
     {
-      "name": "Debug",
-      "configurePreset": "Debug",
+      "name": "debug",
+      "configurePreset": "debug",
       "configuration": "Debug"
     }
 
   ],
   "workflowPresets": [
     {
-      "name": "Release",
+      "name": "release",
       "steps": [
         {
           "type": "configure",
-          "name": "Release"
+          "name": "release"
         },
         {
           "type": "build",
-          "name": "Release"
+          "name": "release"
         }
       ]
     },
     {
-      "name": "Debug",
+      "name": "debug",
       "steps": [
         {
           "type": "configure",
-          "name": "Debug"
+          "name": "debug"
         },
         {
           "type": "build",
-          "name": "Debug"
+          "name": "debug"
         }
       ]
     }
