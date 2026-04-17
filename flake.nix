@@ -26,6 +26,8 @@
                 pkgs.pkg-config
                 pkgs.cmake
                 pkgs.ninja
+                pkgs.perf
+                pkgs.llvmPackages.llvm
             ];
         in {
             devShells.${system} = {
@@ -34,6 +36,9 @@
 
                     LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath commonBuildInputs}";
                     LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
+
+                    CMAKE_C_COMPILER = "clang";
+                    CMAKE_CXX_COMPILER = "clang++";
 
                     shellHook = ''
                     '';

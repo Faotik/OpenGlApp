@@ -16,7 +16,9 @@ void Engine::init(const std::string window_title, int init_window_width, int ini
     init_debug();
 }
 
-void Engine::init_window(const std::string window_title, int init_window_width, int init_window_height)
+void Engine::init_window(const std::string window_title,
+                         int init_window_width,
+                         int init_window_height)
 {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
@@ -28,7 +30,8 @@ void Engine::init_window(const std::string window_title, int init_window_width, 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    m_window = SDL_CreateWindow(window_title.c_str(), init_window_width, init_window_height, SDL_WINDOW_OPENGL);
+    m_window = SDL_CreateWindow(
+        window_title.c_str(), init_window_width, init_window_height, SDL_WINDOW_OPENGL);
     if (m_window == NULL)
     {
         throw std::runtime_error("SDL failed to create a window");
@@ -65,7 +68,12 @@ std::string Engine::read_file(const std::string &filename)
 }
 
 // https://learnopengl.com/In-Practice/Debugging
-void Engine::glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message,
+void Engine::glDebugOutput(GLenum source,
+                           GLenum type,
+                           unsigned int id,
+                           GLenum severity,
+                           GLsizei length,
+                           const char *message,
                            const void *userParam)
 {
     // ignore non-significant error/warning codes
@@ -150,10 +158,11 @@ void Engine::glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum s
     std::cout << std::endl;
 }
 
-void Engine::clear_window(float red, float green, float blue, float alpha)
+void Engine::clear_window(const float red, const float green, const float blue, const float alpha)
 {
+    glEnable(GL_DEPTH_TEST);
     glClearColor(red, green, blue, alpha);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Engine::swap_window()
@@ -163,7 +172,7 @@ void Engine::swap_window()
 
 float Engine::get_time_seconds()
 {
-    return ((float)SDL_GetTicks()) / 1000;
+    return static_cast<float>(SDL_GetTicks()) / 1000;
 }
 
 void Engine::memory_barrier(MEMORY_BARRIER_TYPE type)

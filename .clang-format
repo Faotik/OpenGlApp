@@ -2,7 +2,7 @@ BasedOnStyle: LLVM
 Language: Cpp
 Standard: c++17
 
-ColumnLimit: 135
+ColumnLimit: 100
 
 AccessModifierOffset: -4
 TabWidth: 4
@@ -10,21 +10,24 @@ IndentWidth: 4
 
 UseTab: Never
 
+BinPackArguments: false
+BinPackParameters: false
+
 AllowShortFunctionsOnASingleLine: Empty
 
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterClass:      true
+  AfterClass: true
   AfterControlStatement: true
-  AfterEnum:       true
-  AfterFunction:   true
-  AfterNamespace:  true
-  AfterStruct:     true
-  AfterUnion:      true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
   AfterExternBlock: true
-  BeforeCatch:     true
-  BeforeElse:      true
-  IndentBraces:    false
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: false
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false

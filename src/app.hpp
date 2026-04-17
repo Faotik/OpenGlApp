@@ -1,16 +1,11 @@
 #pragma once
 
-#include "compute_program.hpp"
 #include "engine.hpp"
-#include "glm/ext/vector_float2.hpp"
 #include "shader_program.hpp"
-#include "storage_buffer.hpp"
 #include "uniform_buffer.hpp"
 #include "vertex_attribute_object.hpp"
-#include <SDL3/SDL_video.h>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+
 #include <string>
 #include <vector>
 
@@ -21,12 +16,10 @@ public:
     void run();
 
 private:
-    struct Circle
+    struct Uniforms
     {
-        glm::vec2 pos;
-        float radius;
-        alignas(16) glm::vec4 color;
-        glm::vec2 velocity;
+        glm::mat4x4 view;
+        glm::mat4x4 projection;
     };
 
     const std::string m_window_title = "OpenGLApp";
@@ -37,22 +30,39 @@ private:
 
     Engine m_engine;
 
+    const int64_t m_cube_count = 100;
+
+    // clang-format off
     std::vector<float> m_vertices = {
-        1.0,  1.0,  0.0,  //
-        1.0,  -1.0, 0.0,  //
-        -1.0, -1.0, 0.0f, //
-        -1.0, 1.0,  0.0f  //
+        -0.5f,  -0.5f, -0.5f,   0.0f, 1.0f, 0.0f, // 0
+        -0.5f,   0.5f, -0.5f,   1.0f, 0.0f, 0.0f, // 1
+         0.5f,   0.5f, -0.5f,   0.1f, 0.1f, 0.1f, // 2
+         0.5f,  -0.5f, -0.5f,   0.0f, 0.0f, 1.0f, // 3
+         0.5f,  -0.5f,  0.5f,   0.0f, 1.0f, 0.0f, // 4
+         0.5f,   0.5f,  0.5f,   1.0f, 0.0f, 0.0f, // 5
+        -0.5f,   0.5f,  0.5f,   0.1f, 0.1f, 0.1f, // 6
+        -0.5f,  -0.5f,  0.5f,   0.0f, 0.0f, 1.0f, // 7
     };
 
     std::vector<int> m_indices = {
-        0, 1, 3, //
-        1, 2, 3  //
+        0, 1, 2,
+        0, 2, 3,
+        3, 2, 5,
+        3, 5, 4,
+        4, 5, 6,
+        4, 6, 7,
+        7, 6, 1,
+        7, 1, 0,
+        1, 6, 5,
+        1, 5, 2,
+        0, 7, 4,
+        0, 4, 3,
     };
-
-    std::vector<Circle> m_circles;
+    // clang-format on
 
 private:
-    void render(ShaderProgram shader_program, ComputeProgram compute_program, VertexAttributeObject vao, UniformBuffer uniform,
-                std::vector<float> uniform_data, StorageBuffer<Circle> ssbo);
+    void render(ShaderProgram shader_program,
+                VertexAttributeObject vao,
+                UniformBuffer<Uniforms> uniform);
     void events();
 };

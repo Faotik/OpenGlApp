@@ -1,19 +1,17 @@
 #pragma once
 
-#include "index_buffer.hpp"
-#include "vertex_buffer.hpp"
 #include <glad/glad.h>
-#include <vector>
+#include <index_buffer.hpp>
+#include <span>
+#include <vertex_buffer.hpp>
 
 class VertexAttributeObject
 {
 public:
-    VertexAttributeObject(std::vector<VertexBuffer> &vertex_buffers);
-    VertexAttributeObject(std::vector<VertexBuffer> &vertex_buffers, IndexBuffer &index_buffer);
-    VertexAttributeObject(VertexBuffer &vertex_buffer);
-    VertexAttributeObject(VertexBuffer &vertex_buffer, IndexBuffer &index_buffer);
+    VertexAttributeObject(std::span<VertexBuffer> vertex_buffers);
+    VertexAttributeObject(std::span<VertexBuffer> vertex_buffers, IndexBuffer &index_buffer);
     void bind();
 
-public:
-    GLuint m_vao;
+private:
+    GLuint m_vao_id;
 };

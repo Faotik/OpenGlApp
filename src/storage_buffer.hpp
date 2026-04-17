@@ -1,36 +1,40 @@
 #pragma once
 
+#include <engine.hpp>
 #include <glad/glad.h>
-#include <vector>
+#include <span>
 
 template <typename T> class StorageBuffer
 {
 public:
-    enum class DRAW_TYPE
+    StorageBuffer(std::span<T> data, Engine::BUFFER_DRAW_TYPE draw_type)
     {
-        STATIC_DRAW = GL_STATIC_DRAW,
-        DYNAMIC_DRAW = GL_DYNAMIC_DRAW,
-        STREAM_DRAW = GL_STREAM_DRAW,
-    };
+        glGenBuffers(1, &m_buffer_id);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_buffer_id);
+        glBufferData(GL_SHADER_STORAGE_BUFFER,
+                     data.size_bytes(),
+                     data.data(),
+                     static_cast<GLenum>(draw_type));
+    }
 
-    StorageBuffer(const std::vector<T> &data, DRAW_TYPE draw_type)
+    StorageBuffer(int64_t size_bytes, Engine::BUFFER_DRAW_TYPE draw_type)
     {
-        glGenBuffers(1, &m_storage_buffer);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_storage_buffer);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), static_cast<GLenum>(draw_type));
+        glGenBuffers(1, &m_buffer_id);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_buffer_id);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, size_bytes, nullptr, static_cast<GLenum>(draw_type));
     }
 
     void bind(GLuint binding)
     {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, m_storage_buffer);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, m_buffer_id);
     }
 
-    void update(const std::vector<T> &data)
+    void update(std::span<T> data, int64_t offset = 0)
     {
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_storage_buffer);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data.size() * sizeof(T), data.data());
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_buffer_id);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, data.size_bytes(), data.data());
     }
 
-public:
-    GLuint m_storage_buffer;
+private:
+    GLuint m_buffer_id;
 };

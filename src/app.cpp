@@ -1,20 +1,16 @@
 #include "app.hpp"
-#include "compute_program.hpp"
 #include "engine.hpp"
-#include "glm/ext/vector_float2.hpp"
-#include "glm/geometric.hpp"
 #include "index_buffer.hpp"
 #include "shader_program.hpp"
-#include "storage_buffer.hpp"
 #include "uniform_buffer.hpp"
 #include "vertex_attribute_object.hpp"
 #include "vertex_buffer.hpp"
 #include <SDL3/SDL_init.h>
-#include <SDL3/SDL_timer.h>
-#include <cmath>
-#include <ctime>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
+#include <vertex_attribute_data.hpp>
 
 App::App()
 {
@@ -24,74 +20,75 @@ App::App()
 void App::run()
 {
     ShaderProgram shader_program("resources/shader.vert", "resources/shader.frag");
-    ComputeProgram compute_program("resources/shader.comp");
 
-    VertexAttributeData attribute_data(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0, 0);
-    VertexBuffer vbo(m_vertices, VertexBuffer::DRAW_TYPE::STATIC_DRAW, {attribute_data});
+    VertexAttributeData attribute_data_pos(0, 3, GL_FALSE, 6 * sizeof(float), nullptr);
+    VertexAttributeData attribute_data_col(
+        1, 3, GL_FALSE, 6 * sizeof(float), (const void *)(3 * sizeof(float)));
+    VertexBuffer vertex_vbo(m_vertices,
+                            Engine::BUFFER_DRAW_TYPE::STATIC_DRAW,
+                            {attribute_data_pos, attribute_data_col});
     IndexBuffer ibo(m_indices, IndexBuffer::DRAW_TYPE::STATIC_DRAW);
-    VertexAttributeObject vao(vbo, ibo);
 
-    const float wall_radius = 300.0;
-    std::vector<float> uniform_data = {m_engine.get_time_seconds(), 0.0, wall_radius, static_cast<float>(m_init_window_width),
-                                       static_cast<float>(m_init_window_height)};
-    UniformBuffer uniform(uniform_data, UniformBuffer::DRAW_TYPE::DYNAMIC_DRAW);
-
-    srand(time(0));
-
-    const int circle_count = 100;
-
-    for (int i = 0; i < circle_count; i++)
+    std::vector<VertexAttributeData> attribute_data_mat_vector;
+    for (size_t i = 0; i < 4; i++)
     {
-        int x;
-        int y;
-        float len;
-        float circle_radius;
-        do
-        {
-            x = (rand() % (static_cast<int>(wall_radius) * 2) - static_cast<int>(wall_radius)) + m_init_window_width / 2;
-            y = (rand() % (static_cast<int>(wall_radius) * 2) - static_cast<int>(wall_radius)) + m_init_window_height / 2;
-            len = glm::distance(glm::vec2(x, y), glm::vec2(m_init_window_width / 2, m_init_window_height / 2));
-            circle_radius = 10;
-        } while (len > wall_radius - static_cast<int>(circle_radius) * 2);
-
-        int vx = rand() % 20 + 1;
-        int vy = rand() % 20 + 1;
-
-        m_circles.push_back(Circle{
-            glm::vec2(x, y),
-            circle_radius,
-            glm::vec4(1.0, 0.0, 0.0, 1.0),
-            glm::vec2(vx, vy),
-        });
+        VertexAttributeData attribute_data_mat(
+            2 + i, 4, GL_FALSE, sizeof(glm::mat4), (const void *)(i * sizeof(float)), 1);
+        attribute_data_mat_vector.push_back(attribute_data_mat);
     }
 
-    StorageBuffer ssbo(m_circles, StorageBuffer<Circle>::DRAW_TYPE::DYNAMIC_DRAW);
+    VertexBuffer instance_vbo(static_cast<int64_t>(sizeof(glm::mat4)) * m_cube_count,
+                              Engine::BUFFER_DRAW_TYPE::DYNAMIC_DRAW,
+                              attribute_data_mat_vector);
+    std::vector vbos{vertex_vbo, instance_vbo};
+    VertexAttributeObject vao(vbos, ibo);
+
+    UniformBuffer<Uniforms> uniform(sizeof(Uniforms), Engine::BUFFER_DRAW_TYPE::DYNAMIC_DRAW);
 
     while (m_is_app_running)
     {
         events();
-        render(shader_program, compute_program, vao, uniform, uniform_data, ssbo);
+        render(shader_program, vao, uniform);
     }
 }
 
-void App::render(ShaderProgram shader_program, ComputeProgram compute_program, VertexAttributeObject vao, UniformBuffer uniform,
-                 std::vector<float> uniform_data, StorageBuffer<Circle> ssbo)
+void App::render(ShaderProgram shader_program,
+                 VertexAttributeObject vao,
+                 UniformBuffer<Uniforms> uniform,
+                 VertexBuffer instance_vbo)
 {
-    compute_program.use_and_dispatch(std::ceil(m_circles.size() / 64.0));
-    m_engine.memory_barrier(Engine::MEMORY_BARRIER_TYPE::SHADER_STORAGE_BARRIER);
-
     m_engine.clear_window();
 
-    uniform_data[0] = m_engine.get_time_seconds();
-    uniform_data[1] = m_circles.size();
-    uniform.update(uniform_data);
+    glm::mat4 view;
+    glm::vec3 camPos(3.0f, 3.0f, -3.0f);
+    glm::vec3 camTarget(0.0f, 0.0f, 0.0f);
+    glm::vec3 camUp(0.0f, 1.0f, 0.0f);
+    view = glm::lookAt(camPos, camTarget, camUp);
+
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+                                            static_cast<float>(m_init_window_width) /
+                                                static_cast<float>(m_init_window_height),
+                                            0.1f,
+                                            100.0f);
+
+    Uniforms uniform_data(view, projection);
+    uniform.update(uniform_data, 0);
     uniform.bind(0);
-    ssbo.bind(0);
+
+    std::vector<glm::mat4> models;
+    for (int64_t i = 0; i < m_cube_count; i++)
+    {
+        glm::mat4 model(1.0f);
+        model = glm::rotate(
+            model, m_engine.get_time_seconds() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        models.push_back(model);
+    }
+    instance_vbo.update(models);
 
     shader_program.use();
     vao.bind();
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *)0);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
 
     m_engine.swap_window();
 }

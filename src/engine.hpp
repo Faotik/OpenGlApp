@@ -12,6 +12,13 @@ public:
         SHADER_STORAGE_BARRIER = GL_SHADER_STORAGE_BARRIER_BIT,
     };
 
+    enum class BUFFER_DRAW_TYPE
+    {
+        STATIC_DRAW = GL_STATIC_DRAW,
+        DYNAMIC_DRAW = GL_DYNAMIC_DRAW,
+        STREAM_DRAW = GL_STREAM_DRAW,
+    };
+
     void init(const std::string window_title, int init_window_width, int init_window_height);
     void clear_window(float red = 0.0f, float green = 0.0f, float blue = 0.0f, float alpha = 1.0);
     void swap_window();
@@ -27,6 +34,11 @@ private:
 private:
     void init_window(const std::string window_title, int init_window_width, int init_window_height);
     void init_debug();
-    static void glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message,
+    static void glDebugOutput(GLenum source,
+                              GLenum type,
+                              unsigned int id,
+                              GLenum severity,
+                              GLsizei length,
+                              const char *message,
                               const void *userParam);
 };
