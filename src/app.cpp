@@ -33,10 +33,10 @@ void App::run()
                             m_vertices.size() * sizeof(float),
                             Buffer::DRAW_TYPE::STATIC_DRAW,
                             {attribute_data_pos, attribute_data_col});
-    Buffer ibo(Buffer::BUFFER_TYPE::INDEX_BUFFER,
-               m_indices.data(),
-               m_indices.size() * sizeof(int),
-               Buffer::DRAW_TYPE::STATIC_DRAW);
+    // Buffer ibo(Buffer::BUFFER_TYPE::INDEX_BUFFER,
+    //            m_indices.data(),
+    //            m_indices.size() * sizeof(int),
+    //            Buffer::DRAW_TYPE::STATIC_DRAW);
 
     // std::vector<VertexAttributeData> attribute_data_mat_vector;
     // for (size_t i = 0; i < 4; i++)
@@ -51,7 +51,7 @@ void App::run()
     //                           Buffer::DRAW_TYPE::DYNAMIC_DRAW,
     //                           attribute_data_mat_vector);
     std::vector vbos{vertex_vbo};
-    VertexAttributeObject vao(vbos, ibo);
+    VertexAttributeObject vao(vbos);
 
     Buffer shader_uniforms(Buffer::BUFFER_TYPE::UNIFORM_BUFFER,
                            nullptr,
@@ -70,21 +70,35 @@ void App::run()
 
     glEnable(GL_DEPTH_TEST);
 
-    std::vector cells(m_world_size * m_world_size * m_world_size, Cell{m_rule_lifespan_count, 0});
+    std::vector cells(m_world_size * m_world_size * m_world_size, Cell{m_rule_lifespan, 0, 0});
 
-    for (uint64_t x = m_world_size / 2 - 2; x <= m_world_size / 2 + 2; x++)
+    for (uint64_t x = m_world_size / 2 - 15; x <= m_world_size / 2 + 15; x++)
     {
-        for (uint64_t y = m_world_size / 2 - 2; y <= m_world_size / 2 + 2; y++)
+        for (uint64_t y = m_world_size / 2 - 15; y <= m_world_size / 2 + 15; y++)
         {
-            for (uint64_t z = m_world_size / 2 - 2; z <= m_world_size / 2 + 2; z++)
+            for (uint64_t z = m_world_size / 2 - 15; z <= m_world_size / 2 + 15; z++)
             {
-                if (rand() % 2 == 0)
+                if (rand() % 10 > 3)
                 {
-                    cells[x + y * m_world_size + z * m_world_size * m_world_size].is_active = 1;
+                    size_t index = x + y * m_world_size + z * m_world_size * m_world_size;
+                    cells[index].is_active = 1;
+                    // if (rand() % 2 == 0)
+                    // {
+                    //     cells[index].time_left = rand() % m_rule_lifespan;
+                    // }
                 }
             }
         }
     }
+
+    // cells[20 + 20 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
+    // cells[21 + 20 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
+    // cells[20 + 21 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
+    // cells[21 + 21 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
+
+    // cells[m_world_size / 2 + m_world_size / 2 * m_world_size +
+    //       m_world_size / 2 * m_world_size * m_world_size]
+    //     .is_active = 1;
 
     shader_ssbo0.update(cells.data(), cells.size() * sizeof(Cell));
     shader_ssbo1.update(cells.data(), cells.size() * sizeof(Cell));
@@ -92,116 +106,9 @@ void App::run()
     while (m_is_app_running)
     {
         events();
-        // tick();
         render(shader_program, compute_program, vao, shader_uniforms, shader_ssbo0, shader_ssbo1);
     }
 }
-
-// uint64_t App::sat_add(uint64_t a, uint64_t b)
-// {
-//     uint64_t result = a + b;
-//     if (result < a)
-//         return std::numeric_limits<uint64_t>::max();
-//     return result;
-// }
-//
-// uint64_t App::sat_sub(uint64_t a, uint64_t b)
-// {
-//     if (a < b)
-//         return 0;
-//     return a - b;
-// }
-//
-// uint64_t App::count_neighbours(uint64_t _x, uint64_t _y, uint64_t _z)
-// {
-//     uint64_t count = 0;
-//
-//     for (uint64_t x = sat_sub(_x, 1); x < sat_add(_x, 1); x++)
-//     {
-//         for (uint64_t y = sat_sub(_y, 1); y < sat_add(_y, 1); y++)
-//         {
-//             for (uint64_t z = sat_sub(_z, 1); z < sat_add(_z, 1); z++)
-//             {
-//                 if ((x == _x && y == _y && z == _z) || x >= m_world_size || y >= m_world_size ||
-//                     z >= m_world_size)
-//                 {
-//                     continue;
-//                 }
-//
-//                 if (m_cells_old[x + y * m_world_size + z * m_world_size *
-//                 m_world_size].is_active)
-//                 {
-//                     count++;
-//                 }
-//             }
-//         }
-//     }
-//
-//     return count;
-// }
-//
-// void App::tick()
-// {
-//     m_models.clear();
-//
-// for (uint64_t x = 0; x < m_world_size; x++)
-// {
-//     for (uint64_t y = 0; y < m_world_size; y++)
-//     {
-//         for (uint64_t z = 0; z < m_world_size; z++)
-//         {
-//             uint64_t count = count_neighbours(x, y, z);
-//
-//             if (m_cells_old[x + y * m_world_size + z * m_world_size *
-//             m_world_size].is_active)
-//             {
-//                 if (!std::ranges::contains(rule_survival_count, count) ||
-//                     (m_cells_old[x + y * m_world_size + z * m_world_size * m_world_size]
-//                              .time_left < rule_lifespan_count &&
-//                      m_cells_old[x + y * m_world_size + z * m_world_size * m_world_size]
-//                              .time_left > 0))
-//                 {
-//                     m_cells[x + y * m_world_size + z * m_world_size *
-//                     m_world_size].time_left--;
-//                 }
-//                 if (m_cells_old[x + y * m_world_size + z * m_world_size * m_world_size]
-//                         .time_left == 0)
-//                 {
-//                     m_cells[x + y * m_world_size + z * m_world_size * m_world_size].is_active
-//                     =
-//                         false;
-//                 }
-//             }
-//             else
-//             {
-//                 if (std::ranges::contains(rule_birth_count, count))
-//                 {
-//                     m_cells[x + y * m_world_size + z * m_world_size * m_world_size].time_left
-//                     =
-//                         rule_lifespan_count;
-//                     m_cells[x + y * m_world_size + z * m_world_size * m_world_size].is_active
-//                     =
-//                         true;
-//                 }
-//             }
-//
-//             if (m_cells[x + y * m_world_size + z * m_world_size * m_world_size].is_active)
-//             {
-//                 glm::mat4 model(1.0f);
-//                 model = glm::translate(model,
-//                                        glm::vec3(-(m_world_size * 0.5),
-//                                                  -(m_world_size * 0.5),
-//                                                  -(m_world_size * 0.5)));
-//                 model = glm::translate(model, glm::vec3(x, y, z));
-//
-//                 m_models.push_back(model);
-//             }
-//         }
-//     }
-// }
-//
-//     m_cells_old = m_cells;
-// }
 
 void App::render(ShaderProgram &shader_program,
                  ComputeProgram &compute_program,
@@ -217,9 +124,13 @@ void App::render(ShaderProgram &shader_program,
 
     m_engine.clear_window();
 
-    glm::vec3 camPos(static_cast<float>(m_world_size),
-                     static_cast<float>(m_world_size),
-                     -static_cast<float>(m_world_size));
+    // glm::vec3 camPos(static_cast<float>(m_world_size * 1.5),
+    //                  static_cast<float>(m_world_size * 1.5),
+    //                  static_cast<float>(m_world_size * 1.5));
+    glm::vec3 camPos(
+        static_cast<float>(std::sin(m_engine.get_time_seconds() * 0.3) * m_world_size * 1.5),
+        static_cast<float>(m_world_size * 1.5),
+        static_cast<float>(std::cos(m_engine.get_time_seconds() * 0.3) * m_world_size * 1.5));
     glm::vec3 camTarget(0.0f, 0.0f, 0.0f);
     glm::vec3 camUp(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::lookAt(camPos, camTarget, camUp);
@@ -229,7 +140,14 @@ void App::render(ShaderProgram &shader_program,
                                             0.1f,
                                             1000.0f);
 
-    ShaderUniforms uniform_data(view, projection, m_ssbo_index, m_world_size);
+    ShaderUniforms uniform_data(view,
+                                projection,
+                                m_ssbo_index,
+                                m_world_size,
+                                m_rule_alive,
+                                m_rule_dead,
+                                m_rule_lifespan,
+                                m_rule_neighbourhood);
     shader_uniforms.update(&uniform_data, sizeof(ShaderUniforms));
     shader_uniforms.bind_base(0);
 
@@ -239,11 +157,8 @@ void App::render(ShaderProgram &shader_program,
     shader_program.use();
     vao.bind();
 
-    glDrawElementsInstanced(GL_TRIANGLES,
-                            static_cast<GLsizei>(m_indices.size()),
-                            GL_UNSIGNED_INT,
-                            nullptr,
-                            static_cast<GLsizei>(m_world_size * m_world_size * m_world_size));
+    glDrawArraysInstanced(
+        GL_TRIANGLES, 0, 36, static_cast<GLsizei>(m_world_size * m_world_size * m_world_size));
 
     m_engine.swap_window();
 

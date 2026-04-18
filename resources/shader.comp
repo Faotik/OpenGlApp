@@ -4,85 +4,112 @@ struct Cell
 {
     int time_left;
     int is_active;
+    int neighbours;
 };
 
-layout(std430, binding = 0) buffer ssbo0 {
+layout(std430, binding = 0) buffer ssbo0
+{
     Cell cells0[];
 };
 
-layout(std430, binding = 1) buffer ssbo1 {
+layout(std430, binding = 1) buffer ssbo1
+{
     Cell cells1[];
 };
 
-layout(std140, binding = 0) uniform UniformBuffer {
+layout(std140, binding = 0) uniform UniformBuffer
+{
     mat4 view;
     mat4 projection;
     int ssbo_index;
     int world_size;
+    uint rule_alive;
+    uint rule_dead;
+    int rule_lifespan;
+    int rule_neighbourhood;
 };
+
+int get_cell(int x, int y, int z)
+{
+    if (x < 0 || y < 0 || z < 0 || x >= world_size || y >= world_size || z >= world_size)
+    {
+        return 0;
+    }
+
+    int index = x + y * world_size + z * world_size * world_size;
+
+    if (ssbo_index == 0 && cells1[index].is_active == 1 && cells1[index].time_left == rule_lifespan)
+    {
+        return 1;
+    }
+    if (ssbo_index == 1 && cells0[index].is_active == 1 && cells0[index].time_left == rule_lifespan)
+    {
+        return 1;
+    }
+
+    return 0;
+}
 
 int count_neighbours(int _x, int _y, int _z)
 {
     int count = 0;
 
-    for (int x = _x - 1; x <= _x + 1; x++)
+    if (rule_neighbourhood == 0)
     {
-        for (int y = _y - 1; y <= _y + 1; y++)
+        for (int x = _x - 1; x <= _x + 1; x++)
         {
-            for (int z = _z - 1; z <= _z + 1; z++)
+            for (int y = _y - 1; y <= _y + 1; y++)
             {
-                if ((x == _x && y == _y && z == _z) ||
-                x < 0 ||
-                y < 0 ||
-                z < 0 ||
-                x >= world_size ||
-                y >= world_size ||
-                 z >= world_size)
+                for (int z = _z - 1; z <= _z + 1; z++)
                 {
-                    continue;
-                }
+                    if (x == _x && y == _y && z == _z)
+                    {
+                        continue;
+                    }
 
-                int index = x + y * world_size + z * world_size * world_size;
-
-                if (ssbo_index == 0 && cells1[index].is_active == 1)
-                {
-                    count++;
-                }
-                if (ssbo_index == 1 && cells0[index].is_active == 1)
-                {
-                    count++;
+                    count += get_cell(x, y, z);
                 }
             }
         }
+    }
+    else
+    {
+        count += get_cell(_x, _y + 1, _z);
+        count += get_cell(_x + 1, _y, _z);
+        count += get_cell(_x, _y - 1, _z);
+        count += get_cell(_x - 1, _y, _z);
+        count += get_cell(_x, _y, _z + 1);
+        count += get_cell(_x, _y, _z - 1);
     }
 
     return count;
 }
 
-layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
-void main() {
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+void main()
+{
     int x = int(gl_GlobalInvocationID.x);
     int y = int(gl_GlobalInvocationID.y);
     int z = int(gl_GlobalInvocationID.z);
 
-    if (x >= world_size || y >= world_size || z >= world_size){
+    if (x >= world_size || y >= world_size || z >= world_size)
+    {
         return;
     }
-    
-    int count = count_neighbours(x, y, z);
 
-    int rule_survival_count = 4;
-    int rule_birth_count = 4;
-    int rule_lifespan_count = 1;
+    int count = count_neighbours(x, y, z);
 
     int index = x + y * world_size + z * world_size * world_size;
 
-    if (ssbo_index == 0) {
+    if (ssbo_index == 0)
+    {
+        cells0[index].neighbours = count;
+
         if (cells1[index].is_active == 1)
         {
-            if (count == rule_survival_count || cells1[index].time_left < rule_lifespan_count)
+            cells0[index].is_active = 1;
+            if ((rule_alive & (1U << uint(count))) == 0 || cells1[index].time_left < rule_lifespan)
             {
-                cells0[index].is_active = 1;
                 cells0[index].time_left--;
             }
             if (cells1[index].time_left == 0)
@@ -92,22 +119,26 @@ void main() {
         }
         else
         {
-            if (count == rule_birth_count)
+            if ((rule_dead & (1U << uint(count))) != 0)
             {
-                cells0[index].time_left = rule_lifespan_count;
+                cells0[index].time_left = rule_lifespan;
                 cells0[index].is_active = 1;
             }
-            else {
+            else
+            {
                 cells0[index].is_active = 0;
             }
         }
     }
-    else {
+    else
+    {
+        cells1[index].neighbours = count;
+
         if (cells0[index].is_active == 1)
         {
-            if (count == rule_survival_count || cells0[index].time_left < rule_lifespan_count)
+            cells1[index].is_active = 1;
+            if ((rule_alive & (1U << uint(count))) == 0 || cells0[index].time_left < rule_lifespan)
             {
-                cells1[index].is_active = 1;
                 cells1[index].time_left--;
             }
             if (cells0[index].time_left == 0)
@@ -117,13 +148,14 @@ void main() {
         }
         else
         {
-            if (count == rule_birth_count)
+            if ((rule_dead & (1U << uint(count))) != 0)
             {
-                cells1[x + y * world_size + z * world_size * world_size].time_left = rule_lifespan_count;
-                cells1[x + y * world_size + z * world_size * world_size].is_active = 1;
+                cells1[index].time_left = rule_lifespan;
+                cells1[index].is_active = 1;
             }
-            else {
-                cells1[x + y * world_size + z * world_size * world_size].is_active = 0;
+            else
+            {
+                cells1[index].is_active = 0;
             }
         }
     }

@@ -1,47 +1,58 @@
 #version 460 core
 
 layout(location = 0) in vec3 pos;
-layout(location = 1) in vec3 color;
-layout(location = 2) in mat4 model;
+layout(location = 1) in vec3 normal;
 
-layout(std140, binding = 0) uniform UniformBuffer {
+layout(std140, binding = 0) uniform UniformBuffer
+{
     mat4 view;
     mat4 projection;
     int ssbo_index;
     int world_size;
+    uint rule_alive;
+    uint rule_dead;
+    int rule_lifespan;
+    int rule_neighbourhood;
 };
 
 struct Cell
 {
     int time_left;
     int is_active;
+    int neighbours;
 };
 
-layout(std430, binding = 0) buffer ssbo0 {
+layout(std430, binding = 0) buffer ssbo0
+{
     Cell cells0[];
 };
 
-layout(std430, binding = 1) buffer ssbo1 {
+layout(std430, binding = 1) buffer ssbo1
+{
     Cell cells1[];
 };
 
 out vec3 out_color;
-flat out int skip;
+flat out int out_skip;
+out vec3 out_normal;
+out vec3 out_pos;
 
 void main()
 {
     int id = gl_InstanceID;
 
-    if (ssbo_index == 0 && cells0[id].is_active == 0) {
+    if (ssbo_index == 0 && cells0[id].is_active == 0)
+    {
         gl_Position = vec4(0.0);
-        out_color = color;
-        skip = 1;
+        out_color = vec3(0.0);
+        out_skip = 1;
         return;
     }
-    if (ssbo_index == 1 && cells1[id].is_active == 0) {
+    if (ssbo_index == 1 && cells1[id].is_active == 0)
+    {
         gl_Position = vec4(0.0);
-        out_color = color;
-        skip = 1;
+        out_color = vec3(0.0);
+        out_skip = 1;
         return;
     }
 
@@ -53,6 +64,24 @@ void main()
     offset -= world_size * 0.5;
 
     gl_Position = projection * view * vec4(pos.xyz + offset, 1.0);
-    out_color = color;
-    skip = 0;
+
+    float t = (distance(vec3(world_size / 2, world_size / 2, world_size / 2), vec3(x, y, z))) / (world_size / 2 * sqrt(3.0));
+    t = mod((t * 10), 2);
+    if (t > 1) {
+        t = 2-t;
+    }
+
+    vec3 color0 = vec3(64.0, 112.0, 255.0) / 255.0;
+    vec3 color1 = vec3(255.0, 0.0, 0.0) / 255.0;
+    vec3 color2 = vec3(255.0, 229.0, 0.0) / 255.0;
+    vec3 color3 = vec3(83.0, 232.0, 237.0) / 255.0;
+
+    out_color = color0 * ((1 - t) * (1 - t) * (1 - t)) + color1 * 3 * ((1-t) * (1-t)) * t + color2 * 3 * (t * t) * (1-t) + color3 * t * t * t;
+    //    out_color = mix(vec3(0.5, 1.0, 0.3), vec3(0.2, 0.5, 0.8), float(cells0[id].neighbours) /
+    //    27); out_color = vec3(x / float(world_size), y / float(world_size), z /
+    //    float(world_size)); out_color = mix(vec3(0.3, 0.3, 0.3), vec3(x / float(world_size), y /
+    //    float(world_size), z / float(world_size)), float(cells0[id].neighbours) / 27);
+    out_skip = 0;
+    out_normal = normal;
+    out_pos = pos;
 }

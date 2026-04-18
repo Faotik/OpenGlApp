@@ -34,7 +34,7 @@ void Engine::init_window(const std::string window_title,
         window_title.c_str(), init_window_width, init_window_height, SDL_WINDOW_OPENGL);
     if (m_window == NULL)
     {
-        throw std::runtime_error("SDL failed to create a window");
+        throw std::runtime_error("SDL failed to create a window " + std::string(SDL_GetError()));
     }
 
     m_glcontext = SDL_GL_CreateContext(m_window);

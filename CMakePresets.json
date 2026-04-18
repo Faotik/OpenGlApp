@@ -1,6 +1,5 @@
 {
   "version": 6,
-
   "configurePresets": [
     {
       "name": "release",
@@ -8,7 +7,7 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_COMPILE_WARNING_AS_ERROR": true,
+        "CMAKE_COMPILE_WARNING_AS_ERROR": false,
         "CMAKE_LINK_WARNING_AS_ERROR": true,
         "SDL_SHARED": "OFF",
         "SDL_STATIC": "ON"
@@ -36,7 +35,6 @@
       "configurePreset": "debug",
       "configuration": "Debug"
     }
-
   ],
   "workflowPresets": [
     {

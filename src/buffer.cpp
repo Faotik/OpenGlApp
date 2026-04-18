@@ -1,5 +1,3 @@
-#pragma once
-
 #include <buffer.hpp>
 
 Buffer::Buffer(BUFFER_TYPE buffer_type, const void *data, size_t size_bytes, DRAW_TYPE draw_type)

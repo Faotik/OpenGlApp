@@ -23,20 +23,38 @@ private:
         glm::mat4x4 projection;
         int ssbo_index;
         int world_size;
+        uint32_t rule_alive;
+        uint32_t rule_dead;
+        int rule_lifespan;
+        int rule_neighbourhood;
     };
 
     struct Cell
     {
         int time_left;
         int is_active;
+        int neighbours;
     };
 
-    const size_t m_world_size = 100;
+    const size_t m_world_size = 200;
 
-    // const std::vector<uint64_t> rule_survival_count{4};
-    // const std::vector<uint64_t> rule_birth_count{4};
-    const int m_rule_lifespan_count = 5;
-    // const bool rule_neighbour_full = true;
+    // clang-format off
+    // const uint32_t m_rule_alive = 0b000000000000000000000000000;
+    // const uint32_t m_rule_dead  = 0b000000000000000000000000000;
+
+    // const uint32_t m_rule_alive = 0b111111111111111111000000000;
+    // const uint32_t m_rule_dead  = 0b000000000001011000011100000;
+
+    // const uint32_t m_rule_alive = 0b000000000000000000001111111;
+    // const uint32_t m_rule_dead  = 0b000000000000000000000001010;
+    // const int m_rule_lifespan = 1;
+    // const int m_rule_neighbourhood = 1;
+
+    const uint32_t m_rule_alive = 0b000000000000000001001000100;
+    const uint32_t m_rule_dead  = 0b000000000000000001101010000;
+    const int m_rule_lifespan = 9;
+    const int m_rule_neighbourhood = 0;
+    // clang-format on
 
     const std::string m_window_title = "OpenGLApp";
     const int m_init_window_width = 1000;
@@ -48,30 +66,73 @@ private:
     Engine m_engine;
 
     // clang-format off
+    // std::vector<float> m_vertices = {
+    //     -0.5f,  -0.5f, -0.5f,   0.0f, 1.0f, 0.0f, // 0
+    //     -0.5f,   0.5f, -0.5f,   1.0f, 0.0f, 0.0f, // 1
+    //      0.5f,   0.5f, -0.5f,   0.1f, 0.1f, 0.1f, // 2
+    //      0.5f,  -0.5f, -0.5f,   0.0f, 0.0f, 1.0f, // 3
+    //      0.5f,  -0.5f,  0.5f,   0.0f, 1.0f, 0.0f, // 4
+    //      0.5f,   0.5f,  0.5f,   1.0f, 0.0f, 0.0f, // 5
+    //     -0.5f,   0.5f,  0.5f,   0.1f, 0.1f, 0.1f, // 6
+    //     -0.5f,  -0.5f,  0.5f,   0.0f, 0.0f, 1.0f, // 7
+    // };
+    //
+    // std::vector<int> m_indices = {
+    //     0, 1, 2,
+    //     0, 2, 3,
+    //     3, 2, 5,
+    //     3, 5, 4,
+    //     4, 5, 6,
+    //     4, 6, 7,
+    //     7, 6, 1,
+    //     7, 1, 0,
+    //     1, 6, 5,
+    //     1, 5, 2,
+    //     0, 7, 4,
+    //     0, 4, 3,
+    // };
     std::vector<float> m_vertices = {
-        -0.5f,  -0.5f, -0.5f,   0.0f, 1.0f, 0.0f, // 0
-        -0.5f,   0.5f, -0.5f,   1.0f, 0.0f, 0.0f, // 1
-         0.5f,   0.5f, -0.5f,   0.1f, 0.1f, 0.1f, // 2
-         0.5f,  -0.5f, -0.5f,   0.0f, 0.0f, 1.0f, // 3
-         0.5f,  -0.5f,  0.5f,   0.0f, 1.0f, 0.0f, // 4
-         0.5f,   0.5f,  0.5f,   1.0f, 0.0f, 0.0f, // 5
-        -0.5f,   0.5f,  0.5f,   0.1f, 0.1f, 0.1f, // 6
-        -0.5f,  -0.5f,  0.5f,   0.0f, 0.0f, 1.0f, // 7
-    };
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-    std::vector<int> m_indices = {
-        0, 1, 2,
-        0, 2, 3,
-        3, 2, 5,
-        3, 5, 4,
-        4, 5, 6,
-        4, 6, 7,
-        7, 6, 1,
-        7, 1, 0,
-        1, 6, 5,
-        1, 5, 2,
-        0, 7, 4,
-        0, 4, 3,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
     // clang-format on
 
