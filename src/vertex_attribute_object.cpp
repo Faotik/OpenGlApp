@@ -1,5 +1,3 @@
-
-
 #include <vertex_attribute_object.hpp>
 
 VertexAttributeObject::VertexAttributeObject(std::span<VertexBuffer> vertex_buffers)
@@ -10,7 +8,7 @@ VertexAttributeObject::VertexAttributeObject(std::span<VertexBuffer> vertex_buff
     for (const auto &vbo : vertex_buffers)
     {
         vbo.bind();
-        for (const auto &attribute_data : vbo.m_attribute_data)
+        for (const auto &attribute_data : vbo.get_attribute_data())
         {
             glVertexAttribPointer(attribute_data.index,
                                   attribute_data.size,
@@ -25,7 +23,7 @@ VertexAttributeObject::VertexAttributeObject(std::span<VertexBuffer> vertex_buff
 }
 
 VertexAttributeObject::VertexAttributeObject(std::span<VertexBuffer> vertex_buffers,
-                                             IndexBuffer &index_buffer)
+                                             Buffer &index_buffer)
 {
     glGenVertexArrays(1, &m_vao_id);
     glBindVertexArray(m_vao_id);
@@ -33,7 +31,7 @@ VertexAttributeObject::VertexAttributeObject(std::span<VertexBuffer> vertex_buff
     for (const auto &vbo : vertex_buffers)
     {
         vbo.bind();
-        for (const auto &attribute_data : vbo.m_attribute_data)
+        for (const auto &attribute_data : vbo.get_attribute_data())
         {
             glVertexAttribPointer(attribute_data.index,
                                   attribute_data.size,
@@ -46,7 +44,7 @@ VertexAttributeObject::VertexAttributeObject(std::span<VertexBuffer> vertex_buff
         }
     }
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer.m_index_buffer);
+    index_buffer.bind();
 }
 
 void VertexAttributeObject::bind()

@@ -160,7 +160,6 @@ void Engine::glDebugOutput(GLenum source,
 
 void Engine::clear_window(const float red, const float green, const float blue, const float alpha)
 {
-    glEnable(GL_DEPTH_TEST);
     glClearColor(red, green, blue, alpha);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

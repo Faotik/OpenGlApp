@@ -34,7 +34,6 @@ add_executable(openglapp)
 target_sources(openglapp
         PRIVATE
         src/app.cpp
-        src/index_buffer.cpp
         src/shader.cpp
         src/vertex_attribute_object.cpp
         src/engine.cpp
@@ -42,6 +41,7 @@ target_sources(openglapp
         src/compute_program.cpp
         src/main.cpp
         src/shader_program.cpp
+        src/buffer.cpp
         src/vertex_buffer.cpp
 )
 

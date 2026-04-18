@@ -1,7 +1,7 @@
 #pragma once
 
+#include <buffer.hpp>
 #include <glad/glad.h>
-#include <index_buffer.hpp>
 #include <span>
 #include <vertex_buffer.hpp>
 
@@ -9,9 +9,9 @@ class VertexAttributeObject
 {
 public:
     VertexAttributeObject(std::span<VertexBuffer> vertex_buffers);
-    VertexAttributeObject(std::span<VertexBuffer> vertex_buffers, IndexBuffer &index_buffer);
+    VertexAttributeObject(std::span<VertexBuffer> vertex_buffers, Buffer &index_buffer);
     void bind();
 
 private:
-    GLuint m_vao_id;
+    GLuint m_vao_id = 0;
 };

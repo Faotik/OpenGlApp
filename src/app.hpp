@@ -2,7 +2,6 @@
 
 #include "engine.hpp"
 #include "shader_program.hpp"
-#include "uniform_buffer.hpp"
 #include "vertex_attribute_object.hpp"
 #include <glm/mat4x4.hpp>
 
@@ -16,7 +15,7 @@ public:
     void run();
 
 private:
-    struct Uniforms
+    struct ShaderUniforms
     {
         glm::mat4x4 view;
         glm::mat4x4 projection;
@@ -30,7 +29,7 @@ private:
 
     Engine m_engine;
 
-    const int64_t m_cube_count = 100;
+    const size_t m_cube_count = 4;
 
     // clang-format off
     std::vector<float> m_vertices = {
@@ -61,8 +60,9 @@ private:
     // clang-format on
 
 private:
-    void render(ShaderProgram shader_program,
-                VertexAttributeObject vao,
-                UniformBuffer<Uniforms> uniform);
+    void render(ShaderProgram &shader_program,
+                VertexAttributeObject &vao,
+                Buffer &shader_uniforms,
+                VertexBuffer &instance_vbo);
     void events();
 };
