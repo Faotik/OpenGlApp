@@ -17,6 +17,7 @@ public:
     void swap_window();
     static std::string read_file(const std::string &filename);
     float get_time_seconds();
+    int get_time_millis();
     void memory_barrier(MEMORY_BARRIER_TYPE type);
     ~Engine();
 

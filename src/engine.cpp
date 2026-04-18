@@ -174,6 +174,11 @@ float Engine::get_time_seconds()
     return static_cast<float>(SDL_GetTicks()) / 1000;
 }
 
+int Engine::get_time_millis()
+{
+    return static_cast<int>(SDL_GetTicks());
+}
+
 void Engine::memory_barrier(MEMORY_BARRIER_TYPE type)
 {
     glMemoryBarrier(static_cast<GLbitfield>(type));

@@ -3,6 +3,8 @@
 #include "engine.hpp"
 #include "shader_program.hpp"
 #include "vertex_attribute_object.hpp"
+
+#include <compute_program.hpp>
 #include <glm/mat4x4.hpp>
 
 #include <string>
@@ -15,34 +17,33 @@ public:
     void run();
 
 private:
-    struct CameraUniforms
+    struct ShaderUniforms
     {
         glm::mat4x4 view;
         glm::mat4x4 projection;
+        int ssbo_index;
+        int world_size;
     };
 
     struct Cell
     {
-        uint64_t time_left;
-        bool is_active;
+        int time_left;
+        int is_active;
     };
 
-    const size_t m_world_size = 20;
+    const size_t m_world_size = 100;
 
-    std::vector<Cell> m_cells_old;
-    std::vector<Cell> m_cells;
-    std::vector<glm::mat4> m_models;
-
-    const std::vector<uint64_t> rule_survival_count{4};
-    const std::vector<uint64_t> rule_birth_count{4};
-    const uint64_t rule_lifespan_count{5};
-    const bool rule_neighbour_full = true;
+    // const std::vector<uint64_t> rule_survival_count{4};
+    // const std::vector<uint64_t> rule_birth_count{4};
+    const int m_rule_lifespan_count = 5;
+    // const bool rule_neighbour_full = true;
 
     const std::string m_window_title = "OpenGLApp";
     const int m_init_window_width = 1000;
     const int m_init_window_height = 800;
 
     bool m_is_app_running = true;
+    int m_ssbo_index = 0;
 
     Engine m_engine;
 
@@ -77,9 +78,11 @@ private:
 private:
     void tick();
     void render(ShaderProgram &shader_program,
+                ComputeProgram &compute_program,
                 VertexAttributeObject &vao,
                 Buffer &shader_uniforms,
-                VertexBuffer &instance_vbo);
+                Buffer &shader_ssbo1,
+                Buffer &shader_ssbo2);
     uint64_t count_neighbours(uint64_t x, uint64_t y, uint64_t z);
     void events();
 

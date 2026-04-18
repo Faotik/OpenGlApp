@@ -1,26 +1,130 @@
 #version 460 core
 
-struct Circle
+struct Cell
 {
-    vec2 pos;
-    float radius;
-    vec4 color;
-    vec2 velocity;
+    int time_left;
+    int is_active;
 };
 
-layout(std430, binding = 0) buffer SSBOBuffer {
-    Circle circles[];
+layout(std430, binding = 0) buffer ssbo0 {
+    Cell cells0[];
+};
+
+layout(std430, binding = 1) buffer ssbo1 {
+    Cell cells1[];
 };
 
 layout(std140, binding = 0) uniform UniformBuffer {
-    float time;
-    float circle_count;
-    float border_radius;
-    float screen_width;
-    float screen_height;
+    mat4 view;
+    mat4 projection;
+    int ssbo_index;
+    int world_size;
 };
 
-layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
-void main() {
+int count_neighbours(int _x, int _y, int _z)
+{
+    int count = 0;
 
+    for (int x = _x - 1; x <= _x + 1; x++)
+    {
+        for (int y = _y - 1; y <= _y + 1; y++)
+        {
+            for (int z = _z - 1; z <= _z + 1; z++)
+            {
+                if ((x == _x && y == _y && z == _z) ||
+                x < 0 ||
+                y < 0 ||
+                z < 0 ||
+                x >= world_size ||
+                y >= world_size ||
+                 z >= world_size)
+                {
+                    continue;
+                }
+
+                int index = x + y * world_size + z * world_size * world_size;
+
+                if (ssbo_index == 0 && cells1[index].is_active == 1)
+                {
+                    count++;
+                }
+                if (ssbo_index == 1 && cells0[index].is_active == 1)
+                {
+                    count++;
+                }
+            }
+        }
+    }
+
+    return count;
+}
+
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+void main() {
+    int x = int(gl_GlobalInvocationID.x);
+    int y = int(gl_GlobalInvocationID.y);
+    int z = int(gl_GlobalInvocationID.z);
+
+    if (x >= world_size || y >= world_size || z >= world_size){
+        return;
+    }
+    
+    int count = count_neighbours(x, y, z);
+
+    int rule_survival_count = 4;
+    int rule_birth_count = 4;
+    int rule_lifespan_count = 1;
+
+    int index = x + y * world_size + z * world_size * world_size;
+
+    if (ssbo_index == 0) {
+        if (cells1[index].is_active == 1)
+        {
+            if (count == rule_survival_count || cells1[index].time_left < rule_lifespan_count)
+            {
+                cells0[index].is_active = 1;
+                cells0[index].time_left--;
+            }
+            if (cells1[index].time_left == 0)
+            {
+                cells0[index].is_active = 0;
+            }
+        }
+        else
+        {
+            if (count == rule_birth_count)
+            {
+                cells0[index].time_left = rule_lifespan_count;
+                cells0[index].is_active = 1;
+            }
+            else {
+                cells0[index].is_active = 0;
+            }
+        }
+    }
+    else {
+        if (cells0[index].is_active == 1)
+        {
+            if (count == rule_survival_count || cells0[index].time_left < rule_lifespan_count)
+            {
+                cells1[index].is_active = 1;
+                cells1[index].time_left--;
+            }
+            if (cells0[index].time_left == 0)
+            {
+                cells1[index].is_active = 0;
+            }
+        }
+        else
+        {
+            if (count == rule_birth_count)
+            {
+                cells1[x + y * world_size + z * world_size * world_size].time_left = rule_lifespan_count;
+                cells1[x + y * world_size + z * world_size * world_size].is_active = 1;
+            }
+            else {
+                cells1[x + y * world_size + z * world_size * world_size].is_active = 0;
+            }
+        }
+    }
 }
