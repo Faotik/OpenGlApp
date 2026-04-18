@@ -5,6 +5,8 @@
 
 int main(int argc, char *argv[])
 {
+    srand(time(nullptr));
+
     try
     {
         App app;

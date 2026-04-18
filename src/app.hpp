@@ -15,11 +15,28 @@ public:
     void run();
 
 private:
-    struct ShaderUniforms
+    struct CameraUniforms
     {
         glm::mat4x4 view;
         glm::mat4x4 projection;
     };
+
+    struct Cell
+    {
+        uint64_t time_left;
+        bool is_active;
+    };
+
+    const size_t m_world_size = 20;
+
+    std::vector<Cell> m_cells_old;
+    std::vector<Cell> m_cells;
+    std::vector<glm::mat4> m_models;
+
+    const std::vector<uint64_t> rule_survival_count{4};
+    const std::vector<uint64_t> rule_birth_count{4};
+    const uint64_t rule_lifespan_count{5};
+    const bool rule_neighbour_full = true;
 
     const std::string m_window_title = "OpenGLApp";
     const int m_init_window_width = 1000;
@@ -28,8 +45,6 @@ private:
     bool m_is_app_running = true;
 
     Engine m_engine;
-
-    const size_t m_cube_count = 4;
 
     // clang-format off
     std::vector<float> m_vertices = {
@@ -60,9 +75,14 @@ private:
     // clang-format on
 
 private:
+    void tick();
     void render(ShaderProgram &shader_program,
                 VertexAttributeObject &vao,
                 Buffer &shader_uniforms,
                 VertexBuffer &instance_vbo);
+    uint64_t count_neighbours(uint64_t x, uint64_t y, uint64_t z);
     void events();
+
+    uint64_t sat_add(uint64_t a, uint64_t b);
+    uint64_t sat_sub(uint64_t a, uint64_t b);
 };
