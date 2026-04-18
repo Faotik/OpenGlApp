@@ -72,33 +72,33 @@ void App::run()
 
     std::vector cells(m_world_size * m_world_size * m_world_size, Cell{m_rule_lifespan, 0, 0});
 
-    for (uint64_t x = m_world_size / 2 - 15; x <= m_world_size / 2 + 15; x++)
-    {
-        for (uint64_t y = m_world_size / 2 - 15; y <= m_world_size / 2 + 15; y++)
-        {
-            for (uint64_t z = m_world_size / 2 - 15; z <= m_world_size / 2 + 15; z++)
-            {
-                if (rand() % 10 > 3)
-                {
-                    size_t index = x + y * m_world_size + z * m_world_size * m_world_size;
-                    cells[index].is_active = 1;
-                    // if (rand() % 2 == 0)
-                    // {
-                    //     cells[index].time_left = rand() % m_rule_lifespan;
-                    // }
-                }
-            }
-        }
-    }
+    // for (uint64_t x = m_world_size / 2 - 10; x <= m_world_size / 2 + 10; x++)
+    // {
+    //     for (uint64_t y = m_world_size / 2 - 10; y <= m_world_size / 2 + 10; y++)
+    //     {
+    //         for (uint64_t z = m_world_size / 2 - 10; z <= m_world_size / 2 + 10; z++)
+    //         {
+    //             if (rand() % 10 > 3)
+    //             {
+    //                 size_t index = x + y * m_world_size + z * m_world_size * m_world_size;
+    //                 cells[index].is_active = 1;
+    //                 // if (rand() % 2 == 0)
+    //                 // {
+    //                 //     cells[index].time_left = rand() % m_rule_lifespan;
+    //                 // }
+    //             }
+    //         }
+    //     }
+    // }
 
     // cells[20 + 20 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
     // cells[21 + 20 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
     // cells[20 + 21 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
     // cells[21 + 21 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
 
-    // cells[m_world_size / 2 + m_world_size / 2 * m_world_size +
-    //       m_world_size / 2 * m_world_size * m_world_size]
-    //     .is_active = 1;
+    cells[m_world_size / 2 + m_world_size / 2 * m_world_size +
+          m_world_size / 2 * m_world_size * m_world_size]
+        .is_active = 1;
 
     shader_ssbo0.update(cells.data(), cells.size() * sizeof(Cell));
     shader_ssbo1.update(cells.data(), cells.size() * sizeof(Cell));
@@ -170,6 +170,8 @@ void App::render(ShaderProgram &shader_program,
     {
         m_ssbo_index = 0;
     }
+
+    // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 }
 
 void App::events()
