@@ -3,5 +3,6 @@
 .vs/
 .idea/
 build/
+frames/
 compile_commands.json
 main

@@ -27,6 +27,7 @@ add_library(glad libs/glad/glad.c)
 target_include_directories(glad
         PUBLIC
         libs/glad/include
+        libs/stb
 )
 
 add_executable(openglapp)

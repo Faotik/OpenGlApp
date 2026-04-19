@@ -1,8 +1,5 @@
 #include <SDL3/SDL_init.h>
 #include <app.hpp>
-
-#include "../build/release/_deps/sdl3-src/include/SDL3/SDL_timer.h"
-
 #include <buffer.hpp>
 #include <engine.hpp>
 #include <glad/glad.h>
@@ -15,6 +12,9 @@
 #include <vertex_attribute_data.hpp>
 #include <vertex_attribute_object.hpp>
 #include <vertex_buffer.hpp>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 
 App::App()
 {
@@ -72,33 +72,33 @@ void App::run()
 
     std::vector cells(m_world_size * m_world_size * m_world_size, Cell{m_rule_lifespan, 0, 0});
 
-    // for (uint64_t x = m_world_size / 2 - 10; x <= m_world_size / 2 + 10; x++)
-    // {
-    //     for (uint64_t y = m_world_size / 2 - 10; y <= m_world_size / 2 + 10; y++)
-    //     {
-    //         for (uint64_t z = m_world_size / 2 - 10; z <= m_world_size / 2 + 10; z++)
-    //         {
-    //             if (rand() % 10 > 3)
-    //             {
-    //                 size_t index = x + y * m_world_size + z * m_world_size * m_world_size;
-    //                 cells[index].is_active = 1;
-    //                 // if (rand() % 2 == 0)
-    //                 // {
-    //                 //     cells[index].time_left = rand() % m_rule_lifespan;
-    //                 // }
-    //             }
-    //         }
-    //     }
-    // }
+    for (uint64_t x = m_world_size / 2 - 10; x <= m_world_size / 2 + 10; x++)
+    {
+        for (uint64_t y = m_world_size / 2 - 10; y <= m_world_size / 2 + 10; y++)
+        {
+            for (uint64_t z = m_world_size / 2 - 10; z <= m_world_size / 2 + 10; z++)
+            {
+                if (rand() % 10 > 3)
+                {
+                    size_t index = x + y * m_world_size + z * m_world_size * m_world_size;
+                    cells[index].is_active = 1;
+                    // if (rand() % 2 == 0)
+                    // {
+                    //     cells[index].time_left = rand() % m_rule_lifespan;
+                    // }
+                }
+            }
+        }
+    }
 
     // cells[20 + 20 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
     // cells[21 + 20 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
     // cells[20 + 21 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
     // cells[21 + 21 * m_world_size + 20 * m_world_size * m_world_size].is_active = 1;
 
-    cells[m_world_size / 2 + m_world_size / 2 * m_world_size +
-          m_world_size / 2 * m_world_size * m_world_size]
-        .is_active = 1;
+    // cells[m_world_size / 2 + m_world_size / 2 * m_world_size +
+    //       m_world_size / 2 * m_world_size * m_world_size]
+    //     .is_active = 1;
 
     shader_ssbo0.update(cells.data(), cells.size() * sizeof(Cell));
     shader_ssbo1.update(cells.data(), cells.size() * sizeof(Cell));
@@ -127,10 +127,9 @@ void App::render(ShaderProgram &shader_program,
     // glm::vec3 camPos(static_cast<float>(m_world_size * 1.5),
     //                  static_cast<float>(m_world_size * 1.5),
     //                  static_cast<float>(m_world_size * 1.5));
-    glm::vec3 camPos(
-        static_cast<float>(std::sin(m_engine.get_time_seconds() * 0.3) * m_world_size * 1.5),
-        static_cast<float>(m_world_size * 1.5),
-        static_cast<float>(std::cos(m_engine.get_time_seconds() * 0.3) * m_world_size * 1.5));
+    glm::vec3 camPos(static_cast<float>(std::sin(m_camera_time) * m_world_size * 1.1),
+                     static_cast<float>(m_world_size * 0.9),
+                     static_cast<float>(std::cos(m_camera_time) * m_world_size * 1.1));
     glm::vec3 camTarget(0.0f, 0.0f, 0.0f);
     glm::vec3 camUp(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::lookAt(camPos, camTarget, camUp);
@@ -160,6 +159,18 @@ void App::render(ShaderProgram &shader_program,
     glDrawArraysInstanced(
         GL_TRIANGLES, 0, 36, static_cast<GLsizei>(m_world_size * m_world_size * m_world_size));
 
+    std::vector<unsigned char> pixels(m_init_window_width * m_init_window_height * 3);
+    glReadPixels(
+        0, 0, m_init_window_width, m_init_window_height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+    std::string path = "./frames/frame" + std::to_string(frame) + ".png";
+    stbi_write_png(path.c_str(),
+                   m_init_window_width,
+                   m_init_window_height,
+                   3,
+                   pixels.data(),
+                   m_init_window_width * 3);
+    frame++;
+
     m_engine.swap_window();
 
     if (m_ssbo_index == 0)
@@ -170,6 +181,8 @@ void App::render(ShaderProgram &shader_program,
     {
         m_ssbo_index = 0;
     }
+
+    m_camera_time += 0.02f;
 
     // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 }

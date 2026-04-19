@@ -45,15 +45,15 @@ private:
     // const uint32_t m_rule_alive = 0b111111111111111111000000000;
     // const uint32_t m_rule_dead  = 0b000000000001011000011100000;
 
-    const uint32_t m_rule_alive = 0b000000000000000000001111111;
-    const uint32_t m_rule_dead  = 0b000000000000000000000001010;
-    const int m_rule_lifespan = 1;
-    const int m_rule_neighbourhood = 1;
+    // const uint32_t m_rule_alive = 0b000000000000000000001111111;
+    // const uint32_t m_rule_dead  = 0b000000000000000000000001010;
+    // const int m_rule_lifespan = 1;
+    // const int m_rule_neighbourhood = 1;
 
-    // const uint32_t m_rule_alive = 0b000000000000000001001000100;
-    // const uint32_t m_rule_dead  = 0b000000000000000001101010000;
-    // const int m_rule_lifespan = 9;
-    // const int m_rule_neighbourhood = 0;
+    const uint32_t m_rule_alive = 0b000000000000000001001000100;
+    const uint32_t m_rule_dead  = 0b000000000000000001101010000;
+    const int m_rule_lifespan = 9;
+    const int m_rule_neighbourhood = 0;
     // clang-format on
 
     const std::string m_window_title = "OpenGLApp";
@@ -62,6 +62,8 @@ private:
 
     bool m_is_app_running = true;
     int m_ssbo_index = 0;
+    float m_camera_time = 0;
+    int frame = 0;
 
     Engine m_engine;
 
